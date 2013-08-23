@@ -22,10 +22,24 @@ class Annotator.Plugin.Touch extends Annotator.Plugin
   template: """
   <div class="annotator-touch-widget annotator-touch-controls annotator-touch-hide">
     <div class="annotator-touch-widget-inner">
-      <a class="annotator-button annotator-add annotator-focus">""" + _t("Annotate") + """</a>
-      <a class="annotator-button annotator-touch-toggle" data-state="off">""" + _t("Start Annotating") + """</a>
+      <a class="annotator-button annotator-add annotator-focus"> #{_t("Annotate")} </a>
+      <a class="annotator-button annotator-touch-toggle" data-state="off"> #{_t("Start Annotating")} </a>
     </div>
   </div>
+  """
+
+  palate_t: """
+    <div id="annotator-palate" style="
+                    width:300px;
+                    height:44px;
+                    background-color:gray;
+                    position:absolute;">
+        <div class="palate"
+            style="position:relative;width:100%;height:100%">
+            <div style="color:red;position:absolute;bottom:5px;left:5px;width: 20px; height:10px;">
+            </div>
+        </div>
+    </div>
   """
 
   # Classes to be used to control the state.
@@ -189,6 +203,23 @@ class Annotator.Plugin.Touch extends Annotator.Plugin
     @controls.addClass(@classes.hide) unless @options.useHighlighter
     this
 
+  # Event handler for mouse click release
+  _palateMouseUp: (e) ->
+    console.log('halp potato')
+    jQuery(@palate).hide()
+
+  # Event handler for mouse click
+  _palateMouseDown: (e) ->
+    wrapper = jQuery('.annotator-wrapper')
+    offset = jQuery(wrapper).offset()
+    console.log(offset)
+    console.log("event: t #{e.pageY}, l #{e.pageX}")
+    console.log("e.pageY (#{e.pageY}) - offset.top (#{offset.top}) = #{e.pageY - offset.top}")
+    jQuery('#annotator-palate').css(
+        top:  e.pageY + 30,
+        left: e.pageX - offset.left - 300/2
+    )
+
   # Sets up the touch controls and binds events, also removes the default
   # adder. Should only be called in the @pluginInit() method.
   #
@@ -201,9 +232,16 @@ class Annotator.Plugin.Touch extends Annotator.Plugin
     @adder = @controls.find(".annotator-add")
     @adder.bind("tap", (onTapDown: (event) -> event.stopPropagation()), @_onAdderTap)
 
+    @palate = jQuery(@palate_t).appendTo("body")
+    jQuery(document).bind({
+        "mouseup": this._palateMouseUp
+        "mousedown": this._palateMouseDown
+    })
+
     @toggle = @controls.find(".annotator-touch-toggle")
     @toggle.bind("tap": @_onToggleTap)
     @toggle.hide() unless @options.useHighlighter
+
 
   # Setup method that creates the @editor and @viewer properties. Should
   # only be called once by the @pluginInit() method.
