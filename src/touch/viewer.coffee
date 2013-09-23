@@ -11,6 +11,8 @@ class Annotator.Plugin.Touch.Viewer extends Annotator.Delegator
     ".annotator-item tap":   "_onTap"
     ".annotator-edit tap":   "_onEdit"
     ".annotator-delete tap": "_onDelete"
+    ".done-button-container tap": "_onDone"
+    ".done-button-container click": "_onDone"
 
   # Sets up the wrapper and instance methods.
   #
@@ -22,10 +24,86 @@ class Annotator.Plugin.Touch.Viewer extends Annotator.Delegator
     super @viewer.element[0], options
 
     @element.unbind("click")
-    @element.addClass("annotator-touch-widget annotator-touch-viewer")
+    @viewer.hide = ->
+    @viewer.show = ->
+    # @element.addClass("annotator-touch-widget annotator-touch-viewer row gray-background")
+    @element.addClass('row')
+    @element.removeClass("annotator-hide annotator-outer annotator-viewer")
+    @element.attr('role', 'complimentary')
+    @element.attr('id', 'sidebar')
+
 
     @on("load", @_onLoad)
 
+
+  #load annotations from for offscreen
+  load: (annotations) ->
+    # @element.removeClass('annotator-hide')
+    @element.empty()
+    @element.html(@template(annotations[0]))
+    # $('.done-button-black').show()
+    $('body').toggleClass('active')
+
+
+  template: Handlebars.compile("""
+      <div class="large-12 columns">
+
+        <!--BEGIN the text from the document that has been highlighted by the user-->
+        <div class="row gray-background">
+          <div class="large-8 large-offset-2 columns highlight-view-container">
+            <p class="highlight-detail-highlighted-text vertical-color-1">{{{quote}}}</p>
+
+          </div>
+
+        </div>
+
+        <!--END the text from the document that has been highlighted by the user-->
+
+        <!--BEGIN the text of the annotation-->
+
+        <div class="row note-section">
+          <div class="large-8 large-offset-2 columns highlight-note-container">
+            <p class="note-detail-header">
+            NOTE
+            </p>
+            <p class="highlight-detail-note-text-2">{{{text}}}
+            </p>
+          </div>
+        </div>
+
+        <!--END the text of the annotation-->
+
+        <!--BEGIN the tags and folders block-->
+
+        <div class="row note-section">
+          <div class="large-8 large-offset-2 columns">
+            <div class="row">
+              <div class="small-6 columns">
+                <p class="note-detail-header">
+                TAGS
+                </p>
+                <p class="highlight-detail-note-text-2">
+                </p>
+              </div>
+
+              <div class="small-6 columns">
+                <p class="note-detail-header">
+                FOLDERS
+                </p>
+                <p class="highlight-detail-note-text-2">
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!--END the tags and folders block-->
+        <div class="done-button-container" >
+          <a class="done-button-black button">DONE</a>
+        </div>
+
+      </div>
+  """)
   # Public: Hides edit controls for all displayed annotations.
   #
   # Examples
@@ -35,6 +113,7 @@ class Annotator.Plugin.Touch.Viewer extends Annotator.Delegator
   #
   # Returns itself.
   hideAllControls: ->
+    # console.log('hideAllControls')
     @element.find(".annotator-item").removeClass(@viewer.classes.showControls)
     this
 
@@ -43,6 +122,7 @@ class Annotator.Plugin.Touch.Viewer extends Annotator.Delegator
   #
   # Returns nothing.
   _onLoad: =>
+    # console.log('_onLoad')
     controls = @element.find(".annotator-controls")
     controls.toggleClass("annotator-controls annotator-touch-controls")
     controls.find("button").addClass("annotator-button")
@@ -53,6 +133,7 @@ class Annotator.Plugin.Touch.Viewer extends Annotator.Delegator
   #
   # Returns nothing.
   _onTap: (event) ->
+    # console.log('_onTap');
     target = jQuery(event.currentTarget)
     isVisible = target.hasClass(@viewer.classes.showControls)
     @hideAllControls()
@@ -64,6 +145,7 @@ class Annotator.Plugin.Touch.Viewer extends Annotator.Delegator
   #
   # Returns nothing.
   _onEdit: (event) ->
+    # console.log('_onEdit')
     event.preventDefault()
     @viewer.onEditClick(event)
 
@@ -72,6 +154,11 @@ class Annotator.Plugin.Touch.Viewer extends Annotator.Delegator
   # event - A jQuery.Event touchend event.
   #
   # Returns nothing.
+  _onDone: ->
+    # console.log('done')
+    $('body').toggleClass('active')
+
   _onDelete: (event) ->
+    # console.log('_onDelete')
     event.preventDefault()
     @viewer.onDeleteClick(event)
