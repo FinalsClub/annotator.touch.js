@@ -1,6 +1,22 @@
 Touch Annotator Plugin
 ======================
 
+DESIGNER INSTRUCTIONS
+---------------------
+Before you start:
+Ensure you have git, python, and node/npm installed
+
+
+    git clone --depth=1 https://github.com/aron/annotator.touch.js.git
+    cd annotator.touch.js
+    npm install
+    cake build
+    python -m SimpleHTTPServer 8080
+    open a browser window to http://localhost:8080/example.html
+    modify css/annotator.touch.css to your heart's content
+
+Intro
+-----
 A plugin for the [OKFN Annotator][#annotator] that improves the usability of
 the tool on touch devices. It has been tested on the following devices.
 
