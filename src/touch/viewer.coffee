@@ -36,14 +36,15 @@ class Annotator.Plugin.Touch.Viewer extends Annotator.Delegator
     @on("load", @_onLoad)
 
 
-  #load annotations from for offscreen
+  #load annotations from for offcanvas
   load: (annotations) ->
-    # @element.removeClass('annotator-hide')
     @element.empty()
+    # put the new html in the element
     @element.html(@template(annotations[0]))
-    # $('.done-button-black').show()
+    #switches the view that is on canvas
     $('body').toggleClass('active')
 
+  # @template(obj) is how you use a handlebars template
 
   template: Handlebars.compile("""
       <div class="large-12 columns">
@@ -98,8 +99,29 @@ class Annotator.Plugin.Touch.Viewer extends Annotator.Delegator
         </div>
 
         <!--END the tags and folders block-->
-        <div class="done-button-container" >
-          <a class="done-button-black button">DONE</a>
+        <div class="row note-metadata-container">
+          <div class="large-12 columns">
+            <div class="row">
+              <div class="small-6 columns">
+                <div class="done-button-container" >
+                  <a class="done-button-black button">DONE</a>
+                </div>
+              </div>
+
+              <div class="small-6 columns">
+                <div class="annotator-edit edit-button-container">
+                <a class="edit-button-yellow" href="#">EDIT THIS NOTE</a>
+                </div>
+              </div>
+
+              <div class="small-6 columns">
+                <div class="delete-button-container annotator-delete" >
+                  <a class="done-button-black button">DELETE THIS NOTE</a>
+                </div>
+              </div>
+
+            </div>
+          </div>
         </div>
 
       </div>
@@ -113,7 +135,6 @@ class Annotator.Plugin.Touch.Viewer extends Annotator.Delegator
   #
   # Returns itself.
   hideAllControls: ->
-    # console.log('hideAllControls')
     @element.find(".annotator-item").removeClass(@viewer.classes.showControls)
     this
 
@@ -122,7 +143,6 @@ class Annotator.Plugin.Touch.Viewer extends Annotator.Delegator
   #
   # Returns nothing.
   _onLoad: =>
-    # console.log('_onLoad')
     controls = @element.find(".annotator-controls")
     controls.toggleClass("annotator-controls annotator-touch-controls")
     controls.find("button").addClass("annotator-button")
