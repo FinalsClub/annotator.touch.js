@@ -11,8 +11,8 @@ class Annotator.Plugin.Touch.Viewer extends Annotator.Delegator
     ".annotator-item tap":   "_onTap"
     ".annotator-edit tap":   "_onEdit"
     ".annotator-delete tap": "_onDelete"
-    ".done-button-container tap": "_onDone"
-    ".done-button-container click": "_onDone"
+    ".done tap": "_onDone"
+    ".done click": "_onDone"
 
   # Sets up the wrapper and instance methods.
   #
@@ -20,14 +20,14 @@ class Annotator.Plugin.Touch.Viewer extends Annotator.Delegator
   # options - An object of instance options.
   #
   # Returns nothing.
-  constructor: (@viewer, @editor, options) ->
+  constructor: (@viewer, options) ->
     super @viewer.element[0], options
 
     @element.unbind("click")
     @viewer.hide = ->
     @viewer.show = ->
     # @element.addClass("annotator-touch-widget annotator-touch-viewer row gray-background")
-    @element.addClass('row')
+    @element.addClass('row sidebar')
     @element.removeClass("annotator-hide annotator-outer annotator-viewer")
     @element.attr('role', 'complimentary')
     @element.attr('id', 'sidebar')
@@ -104,7 +104,7 @@ class Annotator.Plugin.Touch.Viewer extends Annotator.Delegator
           <div class="large-12 columns">
             <div class="row">
               <div class="small-6 columns">
-                <div class="done-button-container" >
+                <div class="done-button-container done" >
                   <a class="done-button-black button">DONE</a>
                 </div>
               </div>
@@ -169,7 +169,7 @@ class Annotator.Plugin.Touch.Viewer extends Annotator.Delegator
     console.log('_onEdit')
     event.preventDefault()
     # @viewer.onEditClick(event)
-    @editor.load(@currentAnnotation)
+    @viewer.publish('edit', @currentAnnotation)
 
   # Callback event called when an delete button is tapped.
   #
@@ -184,4 +184,5 @@ class Annotator.Plugin.Touch.Viewer extends Annotator.Delegator
     # console.log('_onDelete')
     event.preventDefault()
     @viewer.publish('delete', @currentAnnotation)
+    $('body').toggleClass('active')
     # @viewer.onDeleteClick(event)

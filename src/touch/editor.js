@@ -16,8 +16,6 @@ Annotator.Plugin.Touch.Editor = (function(_super) {
 
   Editor.prototype.events = {
     "click": "_onOverlayTap",
-    ".annotator-save tap": "_onSubmit",
-    ".annotator-cancel tap": "_onCancel",
     ".annotator-quote-toggle tap": "_onExpandTap"
   };
 
@@ -25,7 +23,7 @@ Annotator.Plugin.Touch.Editor = (function(_super) {
     expand: "annotator-touch-expand"
   };
 
-  Editor.prototype.template = Handlebars.compile("<div class=\"large-12 columns\">\n  <div class=\"row note-section\">\n    <div class=\"small-12 columns\">\n      <p class=\"dialog-edit-note-text\">Note</p>\n      <textarea class=\"highlight-detail-note-text-edit\">\n        {{{text}}}\n      </textarea>\n    </div>\n  </div>\n  <!--END Edit annotation textarea-->\n\n  <div class=\"dialog-rule\"></div>\n\n  <!--BEGIN Edit annotation metadata-->\n\n  <div class=\"row note-section dialog-edit-note-meta-row\">\n    <div class=\"small-2 columns\">\n      <p class=\"dialog-edit-note-text\">\n        Tags\n      </p>\n    </div>\n\n    <div class=\"small-10 columns\">\n      <input class=\"highlight-detail-note-text edit-detail-note-form\" value=\"\">\n    </div>\n  </div>\n\n  <div class=\"dialog-rule\"></div>\n\n  <div class=\"row note-section dialog-edit-note-meta-row\">\n    <div class=\"small-2 columns\">\n      <p class=\"dialog-edit-note-text\">\n        Folders\n      </p>\n    </div>\n\n    <div class=\"small-10 columns\">\n      <p class=\"highlight-detail-note-text\"></p>\n    </div>\n  </div>\n  <div class=\"row gray-background\">\n    <div class=\"large-12 columns\">\n      <div class=\"row\">\n        <div class=\"large-8 large-offset-2 columns highlight-view-container\">\n          <p class=\"highlight-detail-highlighted-text vertical-color-1\">\n            {{{quote}}}\n          </p>\n        </div>\n      </div>\n    </div>\n  </div>\n\n  <div class=\"row note-metadata-container\">\n    <div class=\"large-12 columns\">\n      <div class=\"row\">\n        <div class=\"small-6 columns\">\n          <div class=\"done-button-container annotator-save\" >\n            <a class=\"done-button-black button\">SAVE</a>\n          </div>\n        </div>\n\n        <div class=\"small-6 columns\">\n          <div class=\"delete-button-container annotator-cancel\" >\n            <a class=\"done-button-black button\">CANCEL</a>\n          </div>\n        </div>\n\n      </div>\n    </div>\n  </div>\n</div>");
+  Editor.prototype.template = Handlebars.compile("<div class=\"large-12 columns\">\n  <div class=\"row note-section\">\n    <div class=\"small-12 columns\">\n      <p class=\"dialog-edit-note-text\">Note</p>\n      <textarea class=\"highlight-detail-note-text-edit\" id=\"text\">\n        {{{text}}}\n      </textarea>\n    </div>\n  </div>\n  <!--END Edit annotation textarea-->\n\n  <div class=\"dialog-rule\"></div>\n\n  <!--BEGIN Edit annotation metadata-->\n\n  <div class=\"row note-section dialog-edit-note-meta-row\">\n    <div class=\"small-2 columns\">\n      <p class=\"dialog-edit-note-text\">\n        Tags\n      </p>\n    </div>\n\n    <div class=\"small-10 columns\">\n      <input class=\"highlight-detail-note-text edit-detail-note-form\" value=\"\">\n    </div>\n  </div>\n\n  <div class=\"dialog-rule\"></div>\n\n  <div class=\"row note-section dialog-edit-note-meta-row\">\n    <div class=\"small-2 columns\">\n      <p class=\"dialog-edit-note-text\">\n        Folders\n      </p>\n    </div>\n\n    <div class=\"small-10 columns\">\n      <p class=\"highlight-detail-note-text\"></p>\n    </div>\n  </div>\n  <div class=\"row gray-background\">\n    <div class=\"large-12 columns\">\n      <div class=\"row\">\n        <div class=\"large-8 large-offset-2 columns highlight-view-container\">\n          <p class=\"highlight-detail-highlighted-text vertical-color-1\">\n            {{{quote}}}\n          </p>\n        </div>\n      </div>\n    </div>\n  </div>\n\n  <div class=\"row note-metadata-container\">\n    <div class=\"large-12 columns\">\n      <div class=\"row\">\n        <div class=\"small-6 columns\">\n          <div class=\"done-button-container annotator-save\" >\n            <a class=\"done-button-black button\">SAVE</a>\n          </div>\n        </div>\n\n        <div class=\"small-6 columns\">\n          <div class=\"delete-button-container annotator-cancel\" >\n            <a class=\"done-button-black button\">CANCEL</a>\n          </div>\n        </div>\n\n      </div>\n    </div>\n  </div>\n</div>");
 
   function Editor(editor, options) {
     this.editor = editor;
@@ -36,19 +34,32 @@ Annotator.Plugin.Touch.Editor = (function(_super) {
     this._triggerAndroidRedraw = __bind(this._triggerAndroidRedraw, this);
     Editor.__super__.constructor.call(this, this.editor.element[0], options);
     this.editor.hide = function() {};
-    this.editor.show = function() {};
-    this.element.undelegate("textarea", "keydown");
+    this.editor.show = function() {
+      return this.publish('show');
+    };
+    this.element.remove();
+    this.element = $('.sidebar');
+    console.log(this.element);
   }
 
-  Editor.prototype.load = function(annotations) {
-    this.annotation = annotations;
-    console.log("editor load");
-    this.container = $('#sidebar');
-    this.container.empty();
-    this.container.html(this.template(annotations[0]));
-    if (!$('body').hasClass('active')) {
-      return $('body').toggleClass('active');
+  Editor.prototype.delegateUiEvents = function() {
+    $('.annotator-cancel').on('tap', this._onCancel);
+    return $('.annotator-save').on('tap', this._onSubmit);
+  };
+
+  Editor.prototype.load = function() {
+    console.log("editor load", this.element);
+    this.element = $('.sidebar');
+    this.element.empty();
+    this.element.html(this.template(this.annotation[0]));
+    if (!this.first) {
+      this.delegateUiEvents();
     }
+    return this.first = true;
+  };
+
+  Editor.prototype.setAnnotation = function(annotations) {
+    return this.annotation = annotations;
   };
 
   Editor.prototype.showQuote = function() {
@@ -138,12 +149,16 @@ Annotator.Plugin.Touch.Editor = (function(_super) {
   };
 
   Editor.prototype._onSubmit = function(event) {
-    event.preventDefault();
-    return this.editor.submit();
+    var text;
+    console.log('_onSubmit');
+    text = $('#text').val();
+    this.annotation[0].text = text;
+    this.editor.publish('save', [this.annotation]);
+    return $('body').toggleClass('active');
   };
 
   Editor.prototype._onCancel = function(event) {
-    event.preventDefault();
+    console.log('_onCancel');
     return $('body').toggleClass('active');
   };
 

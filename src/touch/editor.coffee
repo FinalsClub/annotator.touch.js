@@ -13,8 +13,8 @@ class Annotator.Plugin.Touch.Editor extends Annotator.Delegator
   events:
     # Use click for the overlay rather than tap to allow scrolling.
     "click": "_onOverlayTap"
-    ".annotator-save tap": "_onSubmit"
-    ".annotator-cancel tap": "_onCancel"
+    # ".annotator-save tap": "_onSubmit"
+    # ".annotator-cancel tap": "_onCancel"
     ".annotator-quote-toggle tap": "_onExpandTap"
 
   # Classes for managing the state of the application.
@@ -27,7 +27,7 @@ class Annotator.Plugin.Touch.Editor extends Annotator.Delegator
         <div class="row note-section">
           <div class="small-12 columns">
             <p class="dialog-edit-note-text">Note</p>
-            <textarea class="highlight-detail-note-text-edit">
+            <textarea class="highlight-detail-note-text-edit" id="text">
               {{{text}}}
             </textarea>
           </div>
@@ -105,31 +105,42 @@ class Annotator.Plugin.Touch.Editor extends Annotator.Delegator
   # Returns nothing.
   constructor: (@editor, options) ->
     super @editor.element[0], options
-    # @container = $('#sidebar')
     @editor.hide = ->
-    @editor.show = ->
+    @editor.show = -> this.publish('show')
+    @element.remove()
+    @element = $('.sidebar')
+    console.log(@element)
     # @element.addClass("annotator-touch-editor")
     # @element.wrapInner('<div class="annotator-touch-widget" />')
     # @element.find("form").addClass("annotator-touch-widget-inner")
     # @element.find(".annotator-controls a").addClass("annotator-button")
 
     # Remove the "return to submit" listener.
-    @element.undelegate("textarea", "keydown")
+    # @element.undelegate("textarea", "keydown")
     # @on "hide", => @element.find(":focus").blur()
 
     # @_setupQuoteField()
     # @_setupAndroidRedrawHack()
 
+  delegateUiEvents: ->
+    $('.annotator-cancel').on('tap', @_onCancel)
+    $('.annotator-save').on('tap', @_onSubmit)
 
-  load: (annotations) ->
-    @annotation = annotations
-    console.log("editor load")
-    @container = $('#sidebar')
-    @container.empty()
+
+  load: ->
+    console.log("editor load", @element)
+    @element = $('.sidebar')
+    @element.empty()
     # put the new html in the element
-    @container.html(@template(annotations[0]))
+    @element.html(@template(@annotation[0]))
+    # this is hacky
+    @delegateUiEvents() unless @first
+    @first = true
     #switches the view that is on canvas
-    $('body').toggleClass('active') unless $('body').hasClass('active')
+    # $('body').toggleClass('active') unless $('body').hasClass('active')
+
+  setAnnotation: (annotations) ->
+    @annotation = annotations
 
   # Expands the quote field to display more than one line.
   #
@@ -238,8 +249,11 @@ class Annotator.Plugin.Touch.Editor extends Annotator.Delegator
   #
   # Returns nothing.
   _onSubmit: (event) =>
-    event.preventDefault()
-    @editor.submit()
+    console.log('_onSubmit')
+    text = $('#text').val();
+    @annotation[0].text = text
+    @editor.publish('save', [@annotation])
+    $('body').toggleClass('active')
 
   # Event handler for the cancel button in the editor.
   #
@@ -247,8 +261,9 @@ class Annotator.Plugin.Touch.Editor extends Annotator.Delegator
   #
   # Returns nothing.
   _onCancel: (event) =>
-    event.preventDefault()
+    console.log('_onCancel')
     $('body').toggleClass('active')
+    # event.preventDefault()
     # @editor.hide()
 
   # Event handler for the overlay.

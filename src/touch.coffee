@@ -177,8 +177,8 @@ class Annotator.Plugin.Touch extends Annotator.Plugin
   showEditor: (annotation) ->
     console.log('showEditor')
     # @annotator.showEditor(annotation, {})
-    @editor.load(annotation)
-    @hideControls()
+    @editor.load()
+    # @hideControls()
     this
 
   # Public: Displays the touch controls.
@@ -220,14 +220,15 @@ class Annotator.Plugin.Touch extends Annotator.Plugin
   _setupAnnotatorEvents: ->
     # Wrap the interface elements with touch controls.
     @editor = new Touch.Editor(@annotator.editor)
-    @viewer = new Touch.Viewer(@annotator.viewer, @editor)
+    @viewer = new Touch.Viewer(@annotator.viewer)
 
     # Ensure the annotate buttom is hidden when the interface is visible.
-    # # @annotator.editor.on "show", =>
-    #   console.log('show editor')
-    #   # @_clearWatchForSelection()
-    #   # @annotator.onAdderMousedown()
-    #   @highlighter.disable() if @highlighter
+    @annotator.editor.on "show", =>
+      console.log('show editor')
+      @showEditor()
+      # @_clearWatchForSelection()
+      # @annotator.onAdderMousedown()
+      @highlighter.disable() if @highlighter
 
     @annotator.viewer.on "show", =>
       console.log('show viewer')
@@ -417,6 +418,7 @@ class Annotator.Plugin.Touch extends Annotator.Plugin
       .parents('.annotator-hl')
       .addBack()
       .map -> return $(this).data("annotation")
+    @editor.setAnnotation(annotations)
     @viewer.load(annotations)
     # console.log('annotations', annotations)
 
