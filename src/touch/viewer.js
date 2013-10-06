@@ -18,8 +18,9 @@ Annotator.Plugin.Touch.Viewer = (function(_super) {
     ".done-button-container click": "_onDone"
   };
 
-  function Viewer(viewer, options) {
+  function Viewer(viewer, editor, options) {
     this.viewer = viewer;
+    this.editor = editor;
     this._onLoad = __bind(this._onLoad, this);
     Viewer.__super__.constructor.call(this, this.viewer.element[0], options);
     this.element.unbind("click");
@@ -34,6 +35,7 @@ Annotator.Plugin.Touch.Viewer = (function(_super) {
 
   Viewer.prototype.load = function(annotations) {
     this.element.empty();
+    this.currentAnnotation = annotations;
     this.element.html(this.template(annotations[0]));
     return $('body').toggleClass('active');
   };
@@ -63,8 +65,9 @@ Annotator.Plugin.Touch.Viewer = (function(_super) {
   };
 
   Viewer.prototype._onEdit = function(event) {
+    console.log('_onEdit');
     event.preventDefault();
-    return this.viewer.onEditClick(event);
+    return this.editor.load(this.currentAnnotation);
   };
 
   Viewer.prototype._onDone = function() {
@@ -73,7 +76,7 @@ Annotator.Plugin.Touch.Viewer = (function(_super) {
 
   Viewer.prototype._onDelete = function(event) {
     event.preventDefault();
-    return this.viewer.onDeleteClick(event);
+    return this.viewer.publish('delete', this.currentAnnotation);
   };
 
   return Viewer;

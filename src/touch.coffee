@@ -176,7 +176,8 @@ class Annotator.Plugin.Touch extends Annotator.Plugin
   # Returns itself.
   showEditor: (annotation) ->
     console.log('showEditor')
-    @annotator.showEditor(annotation, {})
+    # @annotator.showEditor(annotation, {})
+    @editor.load(annotation)
     @hideControls()
     this
 
@@ -219,23 +220,23 @@ class Annotator.Plugin.Touch extends Annotator.Plugin
   _setupAnnotatorEvents: ->
     # Wrap the interface elements with touch controls.
     @editor = new Touch.Editor(@annotator.editor)
-    @viewer = new Touch.Viewer(@annotator.viewer)
+    @viewer = new Touch.Viewer(@annotator.viewer, @editor)
 
     # Ensure the annotate buttom is hidden when the interface is visible.
-    @annotator.editor.on "show", =>
-      console.log('show editor')
-      @_clearWatchForSelection()
-      @annotator.onAdderMousedown()
-      @highlighter.disable() if @highlighter
+    # # @annotator.editor.on "show", =>
+    #   console.log('show editor')
+    #   # @_clearWatchForSelection()
+    #   # @annotator.onAdderMousedown()
+    #   @highlighter.disable() if @highlighter
 
     @annotator.viewer.on "show", =>
       console.log('show viewer')
       @highlighter.disable() if @highlighter
 
-    @annotator.editor.on "hide", =>
-      @utils.nextTick =>
-        @highlighter.enable().deselect() if @highlighter
-        # @_watchForSelection()
+    # @annotator.editor.on "hide", =>
+    #   @utils.nextTick =>
+    #     @highlighter.enable().deselect() if @highlighter
+    #     # @_watchForSelection()
 
     @annotator.viewer.on "hide", =>
       @utils.nextTick =>

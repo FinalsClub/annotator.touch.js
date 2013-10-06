@@ -22,11 +22,79 @@ class Annotator.Plugin.Touch.Editor extends Annotator.Delegator
     expand: "annotator-touch-expand"
 
   # General templates.
-  templates:
-    quote: """
-    <button class="annotator-quote-toggle">""" + _t("expand") + """</button>
-    <span class="quote"></span>
-    """
+  template: Handlebars.compile("""
+      <div class="large-12 columns">
+        <div class="row note-section">
+          <div class="small-12 columns">
+            <p class="dialog-edit-note-text">Note</p>
+            <textarea class="highlight-detail-note-text-edit">
+              {{{text}}}
+            </textarea>
+          </div>
+        </div>
+        <!--END Edit annotation textarea-->
+
+        <div class="dialog-rule"></div>
+
+        <!--BEGIN Edit annotation metadata-->
+
+        <div class="row note-section dialog-edit-note-meta-row">
+          <div class="small-2 columns">
+            <p class="dialog-edit-note-text">
+              Tags
+            </p>
+          </div>
+
+          <div class="small-10 columns">
+            <input class="highlight-detail-note-text edit-detail-note-form" value="">
+          </div>
+        </div>
+
+        <div class="dialog-rule"></div>
+
+        <div class="row note-section dialog-edit-note-meta-row">
+          <div class="small-2 columns">
+            <p class="dialog-edit-note-text">
+              Folders
+            </p>
+          </div>
+
+          <div class="small-10 columns">
+            <p class="highlight-detail-note-text"></p>
+          </div>
+        </div>
+        <div class="row gray-background">
+          <div class="large-12 columns">
+            <div class="row">
+              <div class="large-8 large-offset-2 columns highlight-view-container">
+                <p class="highlight-detail-highlighted-text vertical-color-1">
+                  {{{quote}}}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="row note-metadata-container">
+          <div class="large-12 columns">
+            <div class="row">
+              <div class="small-6 columns">
+                <div class="done-button-container annotator-save" >
+                  <a class="done-button-black button">SAVE</a>
+                </div>
+              </div>
+
+              <div class="small-6 columns">
+                <div class="delete-button-container annotator-cancel" >
+                  <a class="done-button-black button">CANCEL</a>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    """)
 
   # Sets up a new instance of the editor wrapper and augments the @editor
   # element with the new interface elements.
@@ -37,17 +105,31 @@ class Annotator.Plugin.Touch.Editor extends Annotator.Delegator
   # Returns nothing.
   constructor: (@editor, options) ->
     super @editor.element[0], options
-    @element.addClass("annotator-touch-editor")
-    @element.wrapInner('<div class="annotator-touch-widget" />')
-    @element.find("form").addClass("annotator-touch-widget-inner")
-    @element.find(".annotator-controls a").addClass("annotator-button")
+    # @container = $('#sidebar')
+    @editor.hide = ->
+    @editor.show = ->
+    # @element.addClass("annotator-touch-editor")
+    # @element.wrapInner('<div class="annotator-touch-widget" />')
+    # @element.find("form").addClass("annotator-touch-widget-inner")
+    # @element.find(".annotator-controls a").addClass("annotator-button")
 
     # Remove the "return to submit" listener.
     @element.undelegate("textarea", "keydown")
-    @on "hide", => @element.find(":focus").blur()
+    # @on "hide", => @element.find(":focus").blur()
 
-    @_setupQuoteField()
-    @_setupAndroidRedrawHack()
+    # @_setupQuoteField()
+    # @_setupAndroidRedrawHack()
+
+
+  load: (annotations) ->
+    @annotation = annotations
+    console.log("editor load")
+    @container = $('#sidebar')
+    @container.empty()
+    # put the new html in the element
+    @container.html(@template(annotations[0]))
+    #switches the view that is on canvas
+    $('body').toggleClass('active') unless $('body').hasClass('active')
 
   # Expands the quote field to display more than one line.
   #
@@ -166,7 +248,8 @@ class Annotator.Plugin.Touch.Editor extends Annotator.Delegator
   # Returns nothing.
   _onCancel: (event) =>
     event.preventDefault()
-    @editor.hide()
+    $('body').toggleClass('active')
+    # @editor.hide()
 
   # Event handler for the overlay.
   #

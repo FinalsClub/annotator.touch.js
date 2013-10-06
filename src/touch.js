@@ -114,7 +114,7 @@ Annotator.Plugin.Touch = (function(_super) {
 
   Touch.prototype.showEditor = function(annotation) {
     console.log('showEditor');
-    this.annotator.showEditor(annotation, {});
+    this.editor.load(annotation);
     this.hideControls();
     return this;
   };
@@ -154,27 +154,12 @@ Annotator.Plugin.Touch = (function(_super) {
   Touch.prototype._setupAnnotatorEvents = function() {
     var _this = this;
     this.editor = new Touch.Editor(this.annotator.editor);
-    this.viewer = new Touch.Viewer(this.annotator.viewer);
-    this.annotator.editor.on("show", function() {
-      console.log('show editor');
-      _this._clearWatchForSelection();
-      _this.annotator.onAdderMousedown();
-      if (_this.highlighter) {
-        return _this.highlighter.disable();
-      }
-    });
+    this.viewer = new Touch.Viewer(this.annotator.viewer, this.editor);
     this.annotator.viewer.on("show", function() {
       console.log('show viewer');
       if (_this.highlighter) {
         return _this.highlighter.disable();
       }
-    });
-    this.annotator.editor.on("hide", function() {
-      return _this.utils.nextTick(function() {
-        if (_this.highlighter) {
-          return _this.highlighter.enable().deselect();
-        }
-      });
     });
     return this.annotator.viewer.on("hide", function() {
       return _this.utils.nextTick(function() {

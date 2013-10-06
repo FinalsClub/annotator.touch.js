@@ -20,7 +20,7 @@ class Annotator.Plugin.Touch.Viewer extends Annotator.Delegator
   # options - An object of instance options.
   #
   # Returns nothing.
-  constructor: (@viewer, options) ->
+  constructor: (@viewer, @editor, options) ->
     super @viewer.element[0], options
 
     @element.unbind("click")
@@ -39,6 +39,7 @@ class Annotator.Plugin.Touch.Viewer extends Annotator.Delegator
   #load annotations from for offcanvas
   load: (annotations) ->
     @element.empty()
+    @currentAnnotation = annotations
     # put the new html in the element
     @element.html(@template(annotations[0]))
     #switches the view that is on canvas
@@ -165,9 +166,10 @@ class Annotator.Plugin.Touch.Viewer extends Annotator.Delegator
   #
   # Returns nothing.
   _onEdit: (event) ->
-    # console.log('_onEdit')
+    console.log('_onEdit')
     event.preventDefault()
-    @viewer.onEditClick(event)
+    # @viewer.onEditClick(event)
+    @editor.load(@currentAnnotation)
 
   # Callback event called when an delete button is tapped.
   #
@@ -181,4 +183,5 @@ class Annotator.Plugin.Touch.Viewer extends Annotator.Delegator
   _onDelete: (event) ->
     # console.log('_onDelete')
     event.preventDefault()
-    @viewer.onDeleteClick(event)
+    @viewer.publish('delete', @currentAnnotation)
+    # @viewer.onDeleteClick(event)
