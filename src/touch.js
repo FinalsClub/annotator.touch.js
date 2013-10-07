@@ -61,7 +61,8 @@ Annotator.Plugin.Touch = (function(_super) {
     }, this._onHighlightTap);
     this.subscribe("selection", this._onSelection);
     this._unbindAnnotatorEvents();
-    return this._setupAnnotatorEvents();
+    this._setupAnnotatorEvents();
+    return this._watchForSelection();
   };
 
   Touch.prototype.pluginDestroy = function() {
@@ -114,8 +115,13 @@ Annotator.Plugin.Touch = (function(_super) {
 
   Touch.prototype.showEditor = function(annotation) {
     console.log('showEditor');
-    this.editor.load();
+    this.editor.loadNew(annotation);
+    this.hideControls();
     return this;
+  };
+
+  Touch.prototype.showEditorEdit = function() {
+    return this.editor.load();
   };
 
   Touch.prototype.showControls = function() {
@@ -156,7 +162,8 @@ Annotator.Plugin.Touch = (function(_super) {
     this.viewer = new Touch.Viewer(this.annotator.viewer);
     this.annotator.editor.on("show", function() {
       console.log('show editor');
-      _this.showEditor();
+      _this.showEditorEdit();
+      _this._clearWatchForSelection();
       if (_this.highlighter) {
         return _this.highlighter.disable();
       }
@@ -166,6 +173,14 @@ Annotator.Plugin.Touch = (function(_super) {
       if (_this.highlighter) {
         return _this.highlighter.disable();
       }
+    });
+    this.annotator.editor.on("hide", function() {
+      return _this.utils.nextTick(function() {
+        if (_this.highlighter) {
+          _this.highlighter.enable().deselect();
+        }
+        return _this._watchForSelection();
+      });
     });
     return this.annotator.viewer.on("hide", function() {
       return _this.utils.nextTick(function() {
@@ -230,7 +245,9 @@ Annotator.Plugin.Touch = (function(_super) {
   };
 
   Touch.prototype._onSelection = function() {
+    console.log('_onSelection');
     if (this.isAnnotating() && this.range && this._isValidSelection(this.range)) {
+      console.log('show controls');
       this.adder.removeAttr("disabled");
       return this.showControls();
     } else {
@@ -251,6 +268,7 @@ Annotator.Plugin.Touch = (function(_super) {
   };
 
   Touch.prototype._onToggleTap = function(event) {
+    console.log('_onToggleTap');
     event.preventDefault();
     if (this.isAnnotating()) {
       return this.stopAnnotating();
@@ -261,12 +279,14 @@ Annotator.Plugin.Touch = (function(_super) {
 
   Touch.prototype._onAdderTap = function(event) {
     var annotation, browserRange, range;
+    console.log('_onAdderTap');
     event.preventDefault();
     if (this.range) {
       browserRange = new Annotator.Range.BrowserRange(this.range);
       range = browserRange.normalize().limit(this.element[0]);
       if (range && !this.annotator.isAnnotator(range.commonAncestor)) {
         annotation = this.createAnnotation(range, this.range.toString());
+        console.log(annotation);
         return this.showEditor(annotation);
       }
     }
@@ -299,7 +319,15 @@ Annotator.Plugin.Touch = (function(_super) {
     return this.viewer.load(annotations);
   };
 
-  Touch.prototype._onDocumentTap = function(event) {};
+  Touch.prototype._onDocumentTap = function(event) {
+    console.log('_onDocumentTap');
+    if (!this.annotator.isAnnotator(event.target)) {
+      this.annotator.viewer.hide();
+    }
+    if (!this.annotator.viewer.isShown()) {
+      return this.document.unbind("tap", this._onDocumentTap);
+    }
+  };
 
   Touch.isTouchDevice = function() {
     return ('ontouchstart' in window) || window.DocumentTouch && document instanceof DocumentTouch;

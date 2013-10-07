@@ -90,7 +90,7 @@ class Annotator.Plugin.Touch extends Annotator.Plugin
 
     @_unbindAnnotatorEvents()
     @_setupAnnotatorEvents()
-    # @_watchForSelection()
+    @_watchForSelection()
 
   # Internal: Method for tearing down a plugin, removing all event listeners
   # and timers etc that it has created. This should be called when the plugin
@@ -177,9 +177,12 @@ class Annotator.Plugin.Touch extends Annotator.Plugin
   showEditor: (annotation) ->
     console.log('showEditor')
     # @annotator.showEditor(annotation, {})
-    @editor.load()
-    # @hideControls()
+    @editor.loadNew(annotation)
+    @hideControls()
     this
+
+  showEditorEdit: ->
+    @editor.load()
 
   # Public: Displays the touch controls.
   #
@@ -225,8 +228,8 @@ class Annotator.Plugin.Touch extends Annotator.Plugin
     # Ensure the annotate buttom is hidden when the interface is visible.
     @annotator.editor.on "show", =>
       console.log('show editor')
-      @showEditor()
-      # @_clearWatchForSelection()
+      @showEditorEdit()
+      @_clearWatchForSelection()
       # @annotator.onAdderMousedown()
       @highlighter.disable() if @highlighter
 
@@ -234,10 +237,10 @@ class Annotator.Plugin.Touch extends Annotator.Plugin
       console.log('show viewer')
       @highlighter.disable() if @highlighter
 
-    # @annotator.editor.on "hide", =>
-    #   @utils.nextTick =>
-    #     @highlighter.enable().deselect() if @highlighter
-    #     # @_watchForSelection()
+    @annotator.editor.on "hide", =>
+      @utils.nextTick =>
+        @highlighter.enable().deselect() if @highlighter
+        @_watchForSelection()
 
     @annotator.viewer.on "hide", =>
       @utils.nextTick =>
@@ -326,8 +329,9 @@ class Annotator.Plugin.Touch extends Annotator.Plugin
   #
   # Returns nothing.
   _onSelection: =>
-    # console.log('_onSelection');
+    console.log('_onSelection');
     if @isAnnotating() and @range and @_isValidSelection(@range)
+      console.log('show controls')
       @adder.removeAttr("disabled")
       @showControls()
     else
@@ -361,7 +365,7 @@ class Annotator.Plugin.Touch extends Annotator.Plugin
   #
   # Returns nohting.
   _onToggleTap: (event) =>
-    # console.log('_onToggleTap')
+    console.log('_onToggleTap')
     event.preventDefault()
     if @isAnnotating() then @stopAnnotating() else @startAnnotating()
 
@@ -372,7 +376,7 @@ class Annotator.Plugin.Touch extends Annotator.Plugin
   #
   # Returns nothing.
   _onAdderTap: (event) =>
-    # console.log('_onAdderTap')
+    console.log('_onAdderTap')
     event.preventDefault()
     if @range
       browserRange = new Annotator.Range.BrowserRange(@range)
@@ -380,6 +384,7 @@ class Annotator.Plugin.Touch extends Annotator.Plugin
 
       if range and not @annotator.isAnnotator(range.commonAncestor)
         annotation = @createAnnotation(range, @range.toString())
+        console.log(annotation)
         @showEditor(annotation)
 
   # Event callback for tap events on highlights and displays the Viewer.
@@ -430,10 +435,10 @@ class Annotator.Plugin.Touch extends Annotator.Plugin
   #
   # Returns nothing.
   _onDocumentTap: (event) =>
-    # console.log('_onDocumentTap');
-    # unless @annotator.isAnnotator(event.target)
-    #   @annotator.viewer.hide()
-    # @document.unbind("tap", @_onDocumentTap) unless @annotator.viewer.isShown()
+    console.log('_onDocumentTap');
+    unless @annotator.isAnnotator(event.target)
+      @annotator.viewer.hide()
+    @document.unbind("tap", @_onDocumentTap) unless @annotator.viewer.isShown()
 
   # Public: Checks to see if the current device is capable of handling
   # touch events.

@@ -27,9 +27,7 @@ class Annotator.Plugin.Touch.Editor extends Annotator.Delegator
         <div class="row note-section">
           <div class="small-12 columns">
             <p class="dialog-edit-note-text">Note</p>
-            <textarea class="highlight-detail-note-text-edit" id="text">
-              {{{text}}}
-            </textarea>
+            <textarea class="highlight-detail-note-text-edit" id="text">{{#if text}}{{text}}{{/if}}</textarea>
           </div>
         </div>
         <!--END Edit annotation textarea-->
@@ -126,21 +124,30 @@ class Annotator.Plugin.Touch.Editor extends Annotator.Delegator
     $('.annotator-cancel').on('tap', @_onCancel)
     $('.annotator-save').on('tap', @_onSubmit)
 
+  loadNew: (annotation)->
+    @element = $('.sidebar')
+    @element.empty()
+    # put the new html in the element
+    @annotation = annotation
+    @element.html(@template(annotation))
+    # this is hacky
+    @delegateUiEvents()
+    #switches the view that is on canvas
+    $('body').toggleClass('active')
 
   load: ->
     console.log("editor load", @element)
     @element = $('.sidebar')
     @element.empty()
     # put the new html in the element
-    @element.html(@template(@annotation[0]))
+    @element.html(@template(@annotation))
     # this is hacky
-    @delegateUiEvents() unless @first
-    @first = true
+    @delegateUiEvents()
     #switches the view that is on canvas
     # $('body').toggleClass('active') unless $('body').hasClass('active')
 
   setAnnotation: (annotations) ->
-    @annotation = annotations
+    @annotation = annotations[0]
 
   # Expands the quote field to display more than one line.
   #
@@ -243,15 +250,11 @@ class Annotator.Plugin.Touch.Editor extends Annotator.Delegator
     event.stopPropagation()
     if @isQuoteHidden() then @showQuote() else @hideQuote()
 
-  # Event handler for the submit button in the editor.
-  #
-  # event - A jQuery.Event tap event object.
-  #
-  # Returns nothing.
+  # only works for the note right now
   _onSubmit: (event) =>
     console.log('_onSubmit')
     text = $('#text').val();
-    @annotation[0].text = text
+    @annotation.text = text
     @editor.publish('save', [@annotation])
     $('body').toggleClass('active')
 
